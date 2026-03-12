@@ -106,7 +106,7 @@ export const resultsApi = createApi({
 
         // 4️⃣ Compute totals
         const total = rows.length;
-        const correct = rows.filter((r) => r.is_correct).length;
+        const correct = rows.filter((r: any) => r.is_correct).length;
         const finalPct = pct(correct, total);
 
         // There is no time_spent_seconds column in schema — default to 0 for now
@@ -115,13 +115,12 @@ export const resultsApi = createApi({
         // Count distinct attempts where any cheat access was logged
         const cheatAccesses = new Set(
           rows
-            .map((r) => r.quiz_attempt_item?.quiz_attempt)
-            .filter(
-              (qa) =>
+            .map((r: any) => r.quiz_attempt_item?.quiz_attempt)
+            .filter((qa: any) =>
                 qa?.final_attempt_cheat_sheet_access &&
                 qa.final_attempt_cheat_sheet_access.length > 0
             )
-            .map((qa) => qa?.id)
+            .map((qa: any) => qa?.id)
         ).size;
 
         // 5️⃣ Bloom-level breakdown
@@ -137,7 +136,7 @@ export const resultsApi = createApi({
         const tally = new Map<BloomLevel, { total: number; correct: number }>();
         levels.forEach((lv) => tally.set(lv, { total: 0, correct: 0 }));
 
-        rows.forEach((r) => {
+        rows.forEach((r: any) => {
           const lv =
             (r.quiz_attempt_item?.question?.bloom_level?.level as BloomLevel) ??
             "Remember";
