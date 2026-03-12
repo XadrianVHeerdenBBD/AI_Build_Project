@@ -20,18 +20,20 @@ interface StudentHeaderProps {
   currentPage?: PageType;
   onBackToPatternSelection?: () => void;
   onBackToLesson?: () => void;
+  locked?: boolean;
 }
 
 export function StudentHeader({ 
   userName, 
   currentPage,
   onBackToPatternSelection,
-  onBackToLesson
+  onBackToLesson,
+  locked = false
 }: StudentHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  const showChangePatternButton = currentPage && currentPage !== "pattern-selection";
-  const showBackToLessonButton = currentPage && ![
+  const showChangePatternButton = currentPage && currentPage !== "pattern-selection" && !locked;
+  const showBackToLessonButton = !locked && currentPage && ![
     "pattern-selection",
     "self-reflection", 
     "instructions"

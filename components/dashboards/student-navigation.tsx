@@ -11,9 +11,10 @@ type PageType =
 interface StudentNavigationProps {
   currentPage: PageType;
   onNavigate: (page: PageType) => void;
+  locked?: boolean;
 }
 
-export function StudentNavigation({ currentPage, onNavigate }: StudentNavigationProps) {
+export function StudentNavigation({ currentPage, onNavigate, locked = false }: StudentNavigationProps) {
   const pages: Array<{ id: PageType; label: string; number: number }> = [
     { id: "practice", label: "Practice", number: 1 },
     { id: "uml-builder", label: "UML Builder", number: 2 },
@@ -35,13 +36,14 @@ export function StudentNavigation({ currentPage, onNavigate }: StudentNavigation
               <li key={id} className="flex-1 max-w-[180px] text-center">
                 <button
                   type="button"
-                  onClick={() => onNavigate(id)}
-                  className="group w-full focus:outline-none"
+                  onClick={() => !locked && onNavigate(id)}
+                  disabled={locked}
+                  className={['group w-full focus:outline-none', locked ? 'cursor-not-allowed' : ''].join(' ')}
                 >
                   <div
                     className={[
                       "mx-auto flex h-10 w-10 lg:h-12 lg:w-12 items-center justify-center rounded-full font-bold text-white transition-all",
-                      active ? "bg-teal-700 shadow-lg" : "bg-teal-500/80 group-hover:bg-teal-600"
+                      active ? "bg-teal-700 shadow-lg" : locked ? "bg-teal-300" : "bg-teal-500/80 group-hover:bg-teal-600"
                     ].join(" ")}
                   >
                     {number}
@@ -50,7 +52,7 @@ export function StudentNavigation({ currentPage, onNavigate }: StudentNavigation
                   <div
                     className={[
                       "mt-2 text-xs lg:text-base font-semibold transition-colors",
-                      active ? "text-teal-700" : "text-black group-hover:text-teal-700"
+                      active ? "text-teal-700" : locked ? "text-gray-400" : "text-black group-hover:text-teal-700"
                     ].join(" ")}
                   >
                     {label}
@@ -70,14 +72,15 @@ export function StudentNavigation({ currentPage, onNavigate }: StudentNavigation
                 <li key={id} className="flex-shrink-0">
                   <button
                     type="button"
-                    onClick={() => onNavigate(id)}
-                    className="group focus:outline-none"
+                    onClick={() => !locked && onNavigate(id)}
+                    disabled={locked}
+                    className={locked ? 'cursor-not-allowed' : 'group focus:outline-none'}
                   >
                     <div className="flex flex-col items-center min-w-[70px]">
                       <div
                         className={[
                           "flex h-10 w-10 items-center justify-center rounded-full font-bold text-white transition-all",
-                          active ? "bg-teal-700 shadow-lg" : "bg-teal-500/80"
+                          active ? "bg-teal-700 shadow-lg" : locked ? "bg-teal-300" : "bg-teal-500/80"
                         ].join(" ")}
                       >
                         {number}
@@ -86,7 +89,7 @@ export function StudentNavigation({ currentPage, onNavigate }: StudentNavigation
                       <div
                         className={[
                           "mt-2 text-xs font-semibold whitespace-nowrap",
-                          active ? "text-teal-700" : "text-black"
+                          active ? "text-teal-700" : locked ? "text-gray-400" : "text-black"
                         ].join(" ")}
                       >
                         {label}
