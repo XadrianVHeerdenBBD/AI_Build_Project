@@ -170,6 +170,7 @@ export default function StudentDashboard({
         currentPage={currentPage}
         onBackToPatternSelection={handleBackToPatternSelection}
         onBackToLesson={handleBackToLesson}
+        locked={currentPage === "practice"}
       />
       {showNav && (
         <StudentNavigation
@@ -182,6 +183,7 @@ export default function StudentDashboard({
               | "feedback"
           }
           onNavigate={setCurrentPage}
+          locked={currentPage === "practice"}
         />
       )}
       <main className="flex-1">

@@ -23,7 +23,7 @@ export async function POST(req: Request) {
 
     if (error || !data?.user) {
       return NextResponse.json(
-        { error: error?.message || "Invalid credentials" },
+        { error: "Invalid credentials" },
         { status: 400 }
       );
     }
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     if (profileError || !profile) {
       return NextResponse.json(
         { error: "User profile not found" },
-        { status: 500 }
+        { status: 404 }
       );
     }
 
