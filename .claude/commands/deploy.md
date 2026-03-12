@@ -2,82 +2,85 @@
 
 Deploy this Next.js Observer Pattern Learning Platform to Vercel.
 
-## Pre-flight Checks
+## Repo
+`https://github.com/XadrianVHeerdenBBD/AI_Build_Project.git`
 
-Before deploying, verify the following. **Stop and report any failure** — do not proceed to deployment with unresolved blockers.
+## Steps
 
-1. **Build succeeds locally**
-   ```bash
-   npm run build
-   ```
-   Report any errors (TypeScript errors are warnings due to `ignoreBuildErrors: true`, but runtime errors matter).
+### 1. Run pre-flight checks (execute all of these)
 
-2. **Lint passes**
-   ```bash
-   npm run lint
-   ```
-   Flag any errors (warnings are acceptable).
-
-3. **Environment variables are defined**
-   Confirm the user has set the following in their Vercel project (or prompt them to do so):
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY` (if `lib/supabase/admin.ts` is used in API routes — check usage)
-
-4. **No secrets in source**
-   Quick scan: grep for any hardcoded keys or `.env` values accidentally committed.
-   ```bash
-   grep -r "eyJ" --include="*.ts" --include="*.tsx" --include="*.js" . --exclude-dir=node_modules
-   ```
-
-## Deployment Steps
-
-### Option A — Vercel CLI (recommended)
+**Build check:**
 ```bash
-# Install Vercel CLI if not present
-npm i -g vercel
+cd c:/Users/bbdnet3018/Downloads/02_Build && npm run build 2>&1
+```
+Report PASS or FAIL. If FAIL, show the errors and stop — do not deploy.
 
-# Login (opens browser)
-vercel login
+**Lint check:**
+```bash
+npm run lint 2>&1
+```
+Report PASS or FAIL. Errors block deploy; warnings are acceptable.
 
-# Deploy to preview
-vercel
+**Secrets scan:**
+```bash
+grep -r "eyJ" --include="*.ts" --include="*.tsx" --include="*.js" . --exclude-dir=node_modules --exclude-dir=.next -l 2>/dev/null
+```
+If any files found, list them and stop — do not deploy.
 
-# Deploy to production
-vercel --prod
+**Git state check:**
+```bash
+git status
+git log --oneline -3
+```
+Confirm the latest changes are committed.
+
+### 2. Check Vercel connection
+```bash
+npx vercel whoami 2>&1
 ```
 
-### Option B — GitHub Integration
-The project repo is: https://github.com/XadrianVHeerdenBBD/AI_Build_Project
+- If **logged in**: continue to step 3
+- If **not logged in**: tell the user to run `/setup-vercel` first, then come back to `/deploy`
 
-1. Push to the `main` branch: `git push origin main`
-2. Vercel auto-deploys on push (if connected — link at https://vercel.com/new by importing the repo above)
-3. Monitor build at https://vercel.com/dashboard
-
-## Post-Deployment Verification
-
-After deployment completes, verify:
-
-1. **Auth flow** — visit the deployed URL, attempt login with a test student and educator account
-2. **Student route** — confirm `/student` redirects unauthenticated users to `/`
-3. **Educator route** — confirm `/educator/dashboard` is accessible only to educators
-4. **API routes** — confirm at least one API call succeeds (check browser network tab)
-5. **Environment** — confirm no `NEXT_PUBLIC_` variables are missing (check browser console for errors)
-
-## Rollback
-
-If the deployment is broken:
+### 3. Check if project is linked
 ```bash
-# List recent deployments
-vercel ls
-
-# Promote a previous deployment to production
-vercel promote <deployment-url>
+npx vercel project ls 2>&1
+cat .vercel/project.json 2>/dev/null || echo "not linked"
 ```
 
-## Report
+- If **linked**: skip to step 4
+- If **not linked**: run `npx vercel link` and follow prompts, then continue
 
-Output a summary with:
-- Pre-flight check results (pass/fail for each)
-- Deployment URL (preview and production)
-- Any warnings or follow-up actions required
+### 4. Deploy
+
+**Preview deploy (safe — does not affect production):**
+```bash
+npx vercel 2>&1
+```
+
+**Production deploy:**
+```bash
+npx vercel --prod 2>&1
+```
+
+Ask the user which they want before running production.
+
+### 5. Post-deploy verification
+After deployment report the URL and ask the user to verify:
+- Auth flow works (login + role redirect)
+- `/student` redirects unauthenticated users to `/`
+- `/educator/dashboard` requires educator role
+- No console errors about missing env vars
+
+### 6. Rollback if broken
+```bash
+npx vercel ls 2>&1
+# Then promote previous deployment:
+npx vercel promote <deployment-url> 2>&1
+```
+
+## Report output
+Summarise:
+- Pre-flight: build ✓/✗, lint ✓/✗, secrets ✓/✗
+- Deploy URL (preview + production)
+- Any follow-up actions needed

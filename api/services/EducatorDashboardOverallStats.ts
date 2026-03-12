@@ -61,7 +61,7 @@ export const educatorDashboardStatsApi = createApi({
               return { error: mapError(profileError) };
             }
 
-            studentIdsForPattern = profileData?.map(p => p.student_id) ?? [];
+            studentIdsForPattern = profileData?.map((p: any) => p.student_id) ?? [];
           }
 
           // Fetch all students (filtered by pattern if applicable)
@@ -75,7 +75,7 @@ export const educatorDashboardStatsApi = createApi({
           }
           const totalStudents = allStudents?.length ?? 0;
 
-          const validStudentIds = new Set((allStudents ?? []).map(s => s.id));
+          const validStudentIds = new Set((allStudents ?? []).map((s: any) => s.id));
 
           // Step 2: Fetch quiz attempts
           let quizQuery = supabase.from("quiz_attempt").select(`
@@ -90,7 +90,7 @@ export const educatorDashboardStatsApi = createApi({
           `);
 
           if (patternId) {
-            quizQuery = quizQuery.in("student_id", allStudents?.map(s => s.id) ?? []);
+            quizQuery = quizQuery.in("student_id", allStudents?.map((s: any) => s.id) ?? []);
           }
 
           const { data: quizAttempts, error: quizError } = await quizQuery;
@@ -110,7 +110,7 @@ export const educatorDashboardStatsApi = createApi({
           });
 
           // Step 3: Calculate avgProgress for practice quizzes
-          const practiceAttempts = processedAttempts.filter(a => a.type.includes("practice"));
+          const practiceAttempts = processedAttempts.filter((a: any) => a.type.includes("practice"));
           const avgProgress =
             practiceAttempts.length > 0
               ? practiceAttempts
@@ -119,7 +119,7 @@ export const educatorDashboardStatsApi = createApi({
               : 0;
 
           // Step 4: Calculate avgScore for final quizzes
-          const finalAttempts = processedAttempts.filter(a => a.type.includes("final"));
+          const finalAttempts = processedAttempts.filter((a: any) => a.type.includes("final"));
           const finalByStudent: Record<string, any> = {};
           finalAttempts.forEach(a => {
             if (!finalByStudent[a.student_id]) finalByStudent[a.student_id] = a;

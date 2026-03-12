@@ -1,64 +1,79 @@
 # Commit
 
-Stage and commit changes to the local repo with a well-structured commit message.
+Stage and commit changes. If on `main`, automatically creates a hotfix branch, commits there, opens a PR, and pushes — never commits directly to main.
 
 ## Repo
 `https://github.com/XadrianVHeerdenBBD/AI_Build_Project.git`
 
 ## Steps
 
-1. **Check current state**
-   ```bash
-   git status
-   git diff --stat
-   ```
-   If there is nothing to commit, report that and stop.
+### 1. Check current state
+```bash
+git status
+git diff --stat
+```
+If nothing to commit, report and stop.
 
-2. **Review what changed**
-   Read the diff to understand the nature of the changes:
-   ```bash
-   git diff
-   git diff --cached
-   ```
+### 2. Check the branch
+```bash
+git branch --show-current
+```
 
-3. **Stage files**
-   Stage specific files by name — never use `git add -A` or `git add .` blindly.
-   - Skip: `.env*`, `*.key`, `*.pem`, any file with secrets
-   - Skip: build artefacts (`/.next/`, `/node_modules/`)
-   - Include: source files in `app/`, `components/`, `lib/`, `api/`, `styles/`, config files, docs
+**If on `main`:** Do NOT commit here. Instead:
+1. Stash any uncommitted changes: `git stash push -m "hotfix-stash"`
+2. Create a hotfix branch: `git checkout -b hotfix/<short-description>` (derive description from the changes)
+3. Pop the stash: `git stash pop`
+4. Continue with steps 3–5 below on the hotfix branch
+5. After committing, run the `/pr` skill automatically to open a PR for this hotfix
 
-4. **Write the commit message**
-   Follow this format:
-   ```
-   <type>(<scope>): <short summary>
+**If on a feature/hotfix branch:** Continue normally.
 
-   <optional body — what changed and why, not how>
-   ```
-   Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`
-   Scope: area of the app (e.g. `auth`, `student-dashboard`, `quiz`, `educator`, `api`, `db`, `ci`)
+### 3. Review the diff
+```bash
+git diff
+git diff --cached
+```
+Read the changes to understand what's being committed.
 
-   Examples:
-   - `feat(quiz): add drag-drop question format support`
-   - `fix(auth): redirect unauthenticated users before page render`
-   - `docs(setup): add Supabase RLS configuration steps`
+### 4. Stage files selectively
+- **Include:** `app/`, `components/`, `lib/`, `api/`, `styles/`, `hooks/`, `middleware/`, config files, `.claude/`, docs
+- **Skip:** `.env*`, `*.key`, `*.pem`, `node_modules/`, `.next/`, `.DS_Store`, `tsconfig.zip`, `.trunk/`
 
-5. **Commit**
-   ```bash
-   git commit -m "$(cat <<'EOF'
-   <type>(<scope>): <summary>
+### 5. Write the commit message
+Format:
+```
+<type>(<scope>): <short summary>
 
-   <body if needed>
+<optional body>
+```
+Types: `feat`, `fix`, `hotfix`, `refactor`, `docs`, `style`, `test`, `chore`
+Scopes: `auth`, `quiz`, `student`, `educator`, `api`, `db`, `ci`, `security`
 
-   Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
-   EOF
-   )"
-   ```
+### 6. Commit
+```bash
+git commit -m "$(cat <<'EOF'
+<type>(<scope>): <summary>
 
-6. **Confirm**
-   Run `git log --oneline -5` and show the user the latest commits so they can verify.
+<body if needed>
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+EOF
+)"
+```
+
+### 7. If this was a hotfix from main
+Immediately run the `/pr` skill to:
+- Push the hotfix branch
+- Open a PR against `main`
+- Show the PR URL for review
+
+### 8. Confirm
+```bash
+git log --oneline -5
+```
 
 ## Safety Rules
-- NEVER amend a commit that has already been pushed
-- NEVER use `--no-verify` to skip hooks
-- NEVER commit to `main` directly — see `/pr` to open a pull request instead
-- If a pre-commit hook fails, fix the underlying issue and create a new commit
+- NEVER commit `.env*` files
+- NEVER use `--no-verify`
+- NEVER commit directly to `main` — hotfix branch + PR always
+- If pre-commit hook fails, fix the issue and create a NEW commit (never --amend a pushed commit)
