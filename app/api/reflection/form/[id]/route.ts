@@ -12,7 +12,10 @@ export async function GET(
     const { id } = await context.params;
     const patternId = id;
 
-    console.log("🔍 Reflection Form Request:", patternId);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
     if (!patternId || patternId === "undefined") {
       return NextResponse.json(
@@ -44,7 +47,7 @@ export async function GET(
 
     if (questionError) {
       return NextResponse.json(
-        { error: questionError.message },
+        { error: "Failed to load questions" },
         { status: 500 }
       );
     }

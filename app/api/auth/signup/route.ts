@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     password,
   });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return NextResponse.json({ error: "Signup failed" }, { status: 400 });
 
   // Insert into public.users
   const { error: insertError } = await supabase.from("users").insert({
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
 
   if (insertError) {
     console.error(insertError);
-    return NextResponse.json({ error: insertError.message }, { status: 400 });
+    return NextResponse.json({ error: "Failed to create user profile" }, { status: 500 });
   }
   await supabase.auth.getSession();
 
