@@ -27,11 +27,12 @@ export async function GET(
     .eq("pattern_id", patternId)
     .single();
 
-  if (error || !profile) {
-    return NextResponse.json(
-      { error: error?.message ?? "Profile not found" },
-      { status: 500 }
-    );
+  if (!profile) {
+    return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+  }
+
+  if (error) {
+    return NextResponse.json({ error: "Failed to load profile" }, { status: 500 });
   }
 
   return NextResponse.json({ profile });

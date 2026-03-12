@@ -29,6 +29,24 @@ export type GetFinalSummaryArgs = {
   email: string;
 };
 
+type ResultRow = {
+  is_correct: boolean;
+  points_earned: number | null;
+  quiz_attempt_item: {
+    id: string;
+    question: {
+      id: string;
+      bloom_level: { level: string } | null;
+    } | null;
+    quiz_attempt: {
+      id: string;
+      student_id: string;
+      quiz_type_id: string;
+      final_attempt_cheat_sheet_access: { id: string; access_time: string }[];
+    } | null;
+  } | null;
+};
+
 const mapError = (e: PostgrestError) => ({
   status: e.code || "SUPABASE_ERROR",
   error: e.message,
@@ -53,7 +71,7 @@ export const resultsApi = createApi({
         if (userErr) return { error: mapError(userErr) };
         if (!userRow)
           return {
-            error: { status: 404, error: "User not found" } as any,
+            error: { status: "NOT_FOUND", error: "User not found" },
           };
         const studentId = userRow.id;
 
@@ -68,9 +86,9 @@ export const resultsApi = createApi({
         if (!quizTypeRow)
           return {
             error: {
-              status: 404,
+              status: "NOT_FOUND",
               error: "Quiz type 'Final Quiz' not found",
-            } as any,
+            },
           };
         const quizTypeId = quizTypeRow.id;
 
@@ -102,11 +120,11 @@ export const resultsApi = createApi({
 
         if (error) return { error: mapError(error) };
 
-        const rows = data ?? [];
+        const rows: ResultRow[] = data ?? [];
 
         // 4️⃣ Compute totals
         const total = rows.length;
-        const correct = rows.filter((r: any) => r.is_correct).length;
+        const correct = rows.filter(r => r.is_correct).length;
         const finalPct = pct(correct, total);
 
         // There is no time_spent_seconds column in schema — default to 0 for now
@@ -115,12 +133,12 @@ export const resultsApi = createApi({
         // Count distinct attempts where any cheat access was logged
         const cheatAccesses = new Set(
           rows
-            .map((r: any) => r.quiz_attempt_item?.quiz_attempt)
-            .filter((qa: any) =>
+            .map(r => r.quiz_attempt_item?.quiz_attempt)
+            .filter(qa =>
                 qa?.final_attempt_cheat_sheet_access &&
                 qa.final_attempt_cheat_sheet_access.length > 0
             )
-            .map((qa: any) => qa?.id)
+            .map(qa => qa?.id)
         ).size;
 
         // 5️⃣ Bloom-level breakdown
@@ -136,10 +154,11 @@ export const resultsApi = createApi({
         const tally = new Map<BloomLevel, { total: number; correct: number }>();
         levels.forEach((lv) => tally.set(lv, { total: 0, correct: 0 }));
 
-        rows.forEach((r: any) => {
-          const lv =
-            (r.quiz_attempt_item?.question?.bloom_level?.level as BloomLevel) ??
-            "Remember";
+        rows.forEach((r) => {
+          const rawLevel = r.quiz_attempt_item?.question?.bloom_level?.level;
+          const lv: BloomLevel = levels.includes(rawLevel as BloomLevel)
+            ? (rawLevel as BloomLevel)
+            : "Remember";
           const t = tally.get(lv)!;
           t.total += 1;
           if (r.is_correct) t.correct += 1;
